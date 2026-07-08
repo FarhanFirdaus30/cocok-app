@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Obrolan — Cocok</title>
+<link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+<div class="app-shell">
+
+  <header class="chat-header" id="chatHeader">
+    <a href="matches.html" class="icon-btn" style="border:none;" title="Kembali">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+    </a>
+    <div class="circle-avatar" id="headerAvatar"></div>
+    <div>
+      <h4 id="headerName"></h4>
+      <span class="status">Aktif sekarang</span>
+    </div>
+  </header>
+
+  <main class="app-main" style="padding-bottom:90px;">
+    <div class="chat-thread" id="chatThread"></div>
+  </main>
+
+  <div class="chat-input-bar">
+    <input type="text" id="chatInput" placeholder="Tulis pesan..." autocomplete="off" />
+    <button class="send-btn" id="sendBtn" title="Kirim">
+      <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M22 2 11 13"></path><path d="M22 2 15 22 11 13 2 9 22 2z"></path></svg>
+    </button>
+  </div>
+</div>
+
+<script src="../js/data.js"></script>
+<script src="../js/app.js"></script>
+<script>
+  const user = requireAuth('login.html');
+
+  const params = new URLSearchParams(window.location.search);
+  const profileId = params.get('id');
+  const profile = findProfile(profileId);
+
+  if (!profile || !isMatch(profileId)) {
+    window.location.href = 'matches.html';
+  }
+
+  document.getElementById('headerAvatar').style.cssText += avatarStyle(profile.id);
+  document.getElementById('headerAvatar').textContent = initialsOf(profile.name);
+  document.getElementById('headerName').textContent = profile.name;
+
+  const thread = document.getElementById('chatThread');
+
+  function renderThread() {
+    const messages = getChat(profileId);
+    thread.innerHTML = '<div class="chat-day">Kalian baru saja cocok 🎉</div>';
+    messages.forEach((m) => {
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble ' + (m.from === 'me' ? 'me' : 'them');
+      bubble.textContent = m.text;
+      thread.appendChild(bubble);
+    });
+    thread.scrollTop = thread.scrollHeight;
+    // pastikan main scroll ke bawah juga
+    window.scrollTo(0, document.body.scrollHeight);
+  }
+
+  function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text) return;
+    pushMessage(profileId, 'me', text);
+    input.value = '';
+    renderThread();
+
+    // Balasan otomatis untuk simulasi obrolan
+    setTimeout(() => {
+      pushMessage(profileId, 'them', randomAutoReply());
+      renderThread();
+    }, 900 + Math.random() * 700);
+  }
+
+  document.getElementById('sendBtn').addEventListener('click', sendMessage);
+  document.getElementById('chatInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') sendMessage();
+  });
+
+  renderThread();
+</script>
+</body>
+</html>

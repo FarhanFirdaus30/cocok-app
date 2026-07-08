@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Daftar — Cocok</title>
+<link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="logo">Cocok<span class="dot">.</span></div>
+    <p class="auth-sub">Dua menit saja. Jujur itu lebih menarik daripada sempurna.</p>
+
+    <div class="form-error" id="formError">Lengkapi nama, usia, dan kota dulu, ya.</div>
+
+    <form id="registerForm">
+      <div class="field">
+        <label for="name">Nama lengkap</label>
+        <input type="text" id="name" placeholder="mis. Andi Saputra" required />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="age">Usia</label>
+          <input type="number" id="age" min="18" max="80" placeholder="25" required />
+        </div>
+        <div class="field">
+          <label for="city">Kota</label>
+          <input type="text" id="city" placeholder="Jakarta" required />
+        </div>
+      </div>
+      <div class="field">
+        <label for="bio">Bio singkat</label>
+        <textarea id="bio" placeholder="Ceritakan sedikit tentang dirimu, hobi, atau apa yang kamu cari..."></textarea>
+      </div>
+      <div class="field">
+        <label>Minat (pilih beberapa)</label>
+        <div class="chip-select" id="chipSelect">
+          <button type="button" class="chip" data-val="Kopi">Kopi</button>
+          <button type="button" class="chip" data-val="Musik">Musik</button>
+          <button type="button" class="chip" data-val="Traveling">Traveling</button>
+          <button type="button" class="chip" data-val="Film">Film</button>
+          <button type="button" class="chip" data-val="Kuliner">Kuliner</button>
+          <button type="button" class="chip" data-val="Olahraga">Olahraga</button>
+          <button type="button" class="chip" data-val="Baca Buku">Baca Buku</button>
+          <button type="button" class="chip" data-val="Seni">Seni</button>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block" style="margin-top:8px;">Buat Akun</button>
+    </form>
+
+    <p class="auth-switch">Sudah punya akun? <a href="login.html">Masuk di sini</a></p>
+  </div>
+</div>
+
+<script src="../js/data.js"></script>
+<script src="../js/app.js"></script>
+<script>
+  if (getUser()) window.location.href = 'discover.html';
+
+  const chips = document.querySelectorAll('.chip');
+  const selectedInterests = new Set();
+  chips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const val = chip.dataset.val;
+      if (selectedInterests.has(val)) {
+        selectedInterests.delete(val);
+        chip.classList.remove('active');
+      } else {
+        selectedInterests.add(val);
+        chip.classList.add('active');
+      }
+    });
+  });
+
+  document.getElementById('registerForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const name = document.getElementById('name').value.trim();
+    const age = document.getElementById('age').value.trim();
+    const city = document.getElementById('city').value.trim();
+    const bio = document.getElementById('bio').value.trim();
+    const errorBox = document.getElementById('formError');
+
+    if (!name || !age || !city) {
+      errorBox.classList.add('show');
+      return;
+    }
+    errorBox.classList.remove('show');
+
+    const user = {
+      name,
+      age,
+      city,
+      bio: bio || 'Belum menambahkan bio. Klik edit profil untuk melengkapi.',
+      interests: Array.from(selectedInterests),
+    };
+    saveUser(user);
+    resetDeck();
+    window.location.href = 'discover.html';
+  });
+</script>
+</body>
+</html>

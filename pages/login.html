@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Masuk — Cocok</title>
+<link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="logo">Cocok<span class="dot">.</span></div>
+    <p class="auth-sub">Senang ketemu kamu lagi. Masuk untuk lanjut cari jodoh.</p>
+
+    <div class="form-error" id="formError">Nama tidak ditemukan. Coba daftar dulu, yuk.</div>
+
+    <form id="loginForm">
+      <div class="field">
+        <label for="name">Nama lengkap</label>
+        <input type="text" id="name" placeholder="Sesuai saat kamu daftar" required />
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Masuk</button>
+    </form>
+
+    <p class="auth-switch">Belum punya akun? <a href="register.html">Daftar di sini</a></p>
+    <p class="auth-switch"><a href="../index.html">&larr; Kembali ke beranda</a></p>
+  </div>
+</div>
+
+<script src="../js/data.js"></script>
+<script src="../js/app.js"></script>
+<script>
+  // Jika sudah login, langsung ke halaman discover
+  if (getUser()) window.location.href = 'discover.html';
+
+  document.getElementById('loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const name = document.getElementById('name').value.trim();
+    const existing = getUser();
+    const errorBox = document.getElementById('formError');
+
+    // Simulasi login sederhana: jika belum pernah ada akun tersimpan sama sekali,
+    // arahkan ke pendaftaran. Jika ada, cukup cocokkan nama secara longgar.
+    const savedRaw = localStorage.getItem('cocok_user');
+    if (!savedRaw) {
+      errorBox.classList.add('show');
+      return;
+    }
+    const saved = JSON.parse(savedRaw);
+    if (saved.name.toLowerCase() !== name.toLowerCase()) {
+      errorBox.textContent = 'Nama tidak cocok dengan akun tersimpan di perangkat ini.';
+      errorBox.classList.add('show');
+      return;
+    }
+    window.location.href = 'discover.html';
+  });
+</script>
+</body>
+</html>

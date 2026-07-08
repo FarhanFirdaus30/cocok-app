@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Jelajahi — Cocok</title>
+<link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+<div class="app-shell">
+
+  <header class="app-topbar">
+    <div class="logo">Cocok<span class="dot">.</span></div>
+    <a href="profile.html" class="icon-btn" title="Profil saya">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+    </a>
+  </header>
+
+  <main class="app-main">
+    <div class="discover-stage" id="discoverStage">
+      <!-- kartu profil dirender oleh JS -->
+    </div>
+
+    <div class="swipe-actions">
+      <button class="swipe-btn pass" id="btnPass" title="Lewati">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+      <button class="swipe-btn like" id="btnLike" title="Suka">
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+      </button>
+      <button class="swipe-btn super" id="btnSuper" title="Super Like">
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+      </button>
+    </div>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="discover.html" class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+      Jelajah
+    </a>
+    <a href="matches.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+      Cocok
+    </a>
+    <a href="matches.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+      Chat
+    </a>
+    <a href="profile.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      Profil
+    </a>
+  </nav>
+</div>
+
+<!-- Modal Match -->
+<div class="match-overlay" id="matchOverlay">
+  <div class="match-modal">
+    <span class="eyebrow">Selamat</span>
+    <h2>Ini Cocok!</h2>
+    <div class="match-avatars" id="matchAvatars"></div>
+    <p id="matchText">Kalian saling suka. Mulai sapa duluan, yuk!</p>
+    <button class="btn btn-primary" id="btnGoChat">Kirim Pesan</button>
+    <button class="btn btn-outline" id="btnKeepSwiping">Lanjut Jelajah</button>
+  </div>
+</div>
+
+<script src="../js/data.js"></script>
+<script src="../js/app.js"></script>
+<script>
+  const user = requireAuth('login.html');
+
+  const stage = document.getElementById('discoverStage');
+  let matchedProfileId = null;
+
+  function remainingProfiles() {
+    const idx = getDeckIndex();
+    return PROFILES.slice(idx);
+  }
+
+  function renderDeck() {
+    stage.innerHTML = '';
+    const queue = remainingProfiles().slice(0, 3);
+
+    if (queue.length === 0) {
+      stage.innerHTML = `
+        <div class="deck-empty">
+          <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#E8546B" stroke-width="1.6"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          <h3>Profil hari ini sudah habis</h3>
+          <p>Kembali lagi nanti untuk melihat profil baru, atau ulangi dari awal untuk demo.</p>
+          <button class="btn btn-dark btn-sm" id="btnRestart" style="margin-top:14px;">Ulangi dari Awal</button>
+        </div>`;
+      document.getElementById('btnRestart').addEventListener('click', () => {
+        resetDeck();
+        renderDeck();
+      });
+      return;
+    }
+
+    // render dari belakang ke depan supaya urutan DOM benar
+    queue.slice().reverse().forEach((profile, revIdx) => {
+      const depth = queue.length - 1 - revIdx; // 0 = kartu paling depan
+      const el = document.createElement('div');
+      el.className = 'swipe-card';
+      el.style.zIndex = 10 - depth;
+      if (depth > 0) {
+        el.style.transform = `scale(${1 - depth * 0.045}) translateY(${depth * 14}px)`;
+        el.style.opacity = depth === 2 ? '0.7' : '0.9';
+      }
+      el.dataset.id = profile.id;
+
+      el.innerHTML = `
+        <div class="photo-fill" style="${avatarStyle(profile.id)}">
+          <div class="card-info">
+            <h3>${profile.name} <span class="age">${profile.age}</span></h3>
+            <div class="loc">📍 ${profile.city}</div>
+            <div class="tag-row">
+              ${profile.interests.map((t) => `<span class="tag">${t}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="swipe-stamp stamp-like">SUKA</div>
+        <div class="swipe-stamp stamp-nope">LEWAT</div>
+      `;
+      stage.appendChild(el);
+
+      if (depth === 0) attachDrag(el, profile.id);
+    });
+  }
+
+  function attachDrag(card, profileId) {
+    let startX = 0, startY = 0, dx = 0, dy = 0, dragging = false;
+    const likeStamp = card.querySelector('.stamp-like');
+    const nopeStamp = card.querySelector('.stamp-nope');
+
+    card.style.transition = 'none';
+
+    function onDown(e) {
+      dragging = true;
+      const p = e.touches ? e.touches[0] : e;
+      startX = p.clientX; startY = p.clientY;
+      card.style.transition = 'none';
+    }
+    function onMove(e) {
+      if (!dragging) return;
+      const p = e.touches ? e.touches[0] : e;
+      dx = p.clientX - startX;
+      dy = p.clientY - startY;
+      const rotate = dx / 18;
+      card.style.transform = `translate(${dx}px, ${dy}px) rotate(${rotate}deg)`;
+      likeStamp.style.opacity = Math.max(0, Math.min(1, dx / 90));
+      nopeStamp.style.opacity = Math.max(0, Math.min(1, -dx / 90));
+    }
+    function onUp() {
+      if (!dragging) return;
+      dragging = false;
+      const threshold = 110;
+      if (dx > threshold) {
+        finishSwipe(card, profileId, 'like');
+      } else if (dx < -threshold) {
+        finishSwipe(card, profileId, 'pass');
+      } else {
+        card.style.transition = 'transform .3s ease';
+        card.style.transform = '';
+        likeStamp.style.opacity = 0;
+        nopeStamp.style.opacity = 0;
+      }
+      dx = 0; dy = 0;
+    }
+
+    card.addEventListener('pointerdown', onDown);
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+
+    card._cleanup = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+  }
+
+  function finishSwipe(card, profileId, action) {
+    card.style.transition = 'transform .4s ease, opacity .4s ease';
+    const flyX = action === 'like' ? 700 : -700;
+    card.style.transform = `translate(${flyX}px, -40px) rotate(${flyX / 18}deg)`;
+    card.style.opacity = '0';
+    if (card._cleanup) card._cleanup();
+
+    setTimeout(() => {
+      setDeckIndex(getDeckIndex() + 1);
+      if (action === 'like') handleLike(profileId, false);
+      else renderDeck();
+    }, 380);
+  }
+
+  function handleLike(profileId, isSuper) {
+    const matched = tryMatch(profileId, isSuper);
+    if (matched) {
+      openMatchModal(profileId);
+    } else {
+      renderDeck();
+    }
+  }
+
+  function openMatchModal(profileId) {
+    matchedProfileId = profileId;
+    const profile = findProfile(profileId);
+    const avatarsEl = document.getElementById('matchAvatars');
+    avatarsEl.innerHTML = `
+      <div class="m-avatar" style="${avatarStyle(user.name)}">${initialsOf(user.name)}</div>
+      <div class="m-avatar" style="${avatarStyle(profile.id)}">${initialsOf(profile.name)}</div>
+    `;
+    document.getElementById('matchText').textContent =
+      `Kamu dan ${profile.name.split(' ')[0]} saling suka. Mulai sapa duluan, yuk!`;
+    document.getElementById('matchOverlay').classList.add('show');
+  }
+
+  document.getElementById('btnGoChat').addEventListener('click', () => {
+    if (matchedProfileId) window.location.href = `chat.html?id=${matchedProfileId}`;
+  });
+  document.getElementById('btnKeepSwiping').addEventListener('click', () => {
+    document.getElementById('matchOverlay').classList.remove('show');
+    renderDeck();
+  });
+
+  document.getElementById('btnPass').addEventListener('click', () => {
+    const top = stage.querySelector('.swipe-card:last-child') || stage.querySelector('.swipe-card');
+    const topCard = [...stage.querySelectorAll('.swipe-card')].find((c) => c.style.zIndex == 10);
+    if (topCard) finishSwipe(topCard, topCard.dataset.id, 'pass');
+  });
+  document.getElementById('btnLike').addEventListener('click', () => {
+    const topCard = [...stage.querySelectorAll('.swipe-card')].find((c) => c.style.zIndex == 10);
+    if (topCard) finishSwipe(topCard, topCard.dataset.id, 'like');
+  });
+  document.getElementById('btnSuper').addEventListener('click', () => {
+    const topCard = [...stage.querySelectorAll('.swipe-card')].find((c) => c.style.zIndex == 10);
+    if (!topCard) return;
+    const profileId = topCard.dataset.id;
+    topCard.style.transition = 'transform .4s ease, opacity .4s ease';
+    topCard.style.transform = 'translateY(-700px) rotate(0deg)';
+    topCard.style.opacity = '0';
+    setTimeout(() => {
+      setDeckIndex(getDeckIndex() + 1);
+      handleLike(profileId, true);
+    }, 380);
+  });
+
+  renderDeck();
+</script>
+</body>
+</html>
